@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LSPD Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050d1a;--bg2:#081525;--surface:rgba(255,255,255,.04);--surface2:rgba(255,255,255,.07);--border:rgba(255,255,255,.06);--accent:#f5c842;--accent2:#e8a200;--blue:#1a6fc4;--blue2:#2589e8;--text:#e2eaf5;--muted:#8099b5;--success:#22cc88;--danger:#e74c3c;--warning:#f39c12;--gold:#c9a84c;--gold2:#e8c86a;--purple:#8844cc}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',sans-serif}
+body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.bg{position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(26,111,196,.3) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 110%,rgba(245,200,66,.05) 0%,transparent 50%),var(--bg)}
+.bg::after{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(255,255,255,.012) 40px),repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(255,255,255,.012) 40px)}
+nav{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:rgba(5,13,26,.92);border-bottom:1px solid rgba(201,168,76,.2);backdrop-filter:blur(14px);position:sticky;top:0;z-index:999}
+.logo{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:900;color:var(--accent)}
+.logo-badge{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;color:#000;font-weight:900}
+.nav-links{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.nav-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted);cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:600;transition:.2s;white-space:nowrap}
+.nav-btn:hover{background:var(--blue);border-color:var(--blue2);color:#fff}
+.nav-btn.primary{background:var(--blue);border-color:var(--blue2);color:#fff}
+.nav-btn.gold{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.3);color:var(--gold2)}
+.nav-btn.gold:hover{background:var(--accent);color:#000}
+.container{width:min(1200px,95%);margin:auto;padding:25px 0}
+.hero{text-align:center;padding:50px 30px 30px}
+.hero h1{font-size:38px;font-weight:900;margin-bottom:6px}
+.hero h1 span{color:var(--accent)}
+.hero p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:24px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:.2s;text-align:center}
+.card:hover{border-color:rgba(245,200,66,.15);transform:translateY(-2px)}
+.card-icon{font-size:26px;margin-bottom:8px}
+.card h3{color:var(--accent);font-size:14px;margin-bottom:4px}
+.card p{color:var(--muted);font-size:12px;line-height:1.7}
+.section-title{margin:28px 0 14px;font-size:20px;font-weight:900;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:linear-gradient(to left,transparent,var(--border))}
+.ann{margin-bottom:10px;padding:16px 18px;border-radius:14px;background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--accent);transition:.2s}
+.ann:hover{border-color:rgba(245,200,66,.25)}
+.ann-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ann-title{color:var(--accent);font-weight:700;font-size:14px}
+.ann-date{color:var(--muted);font-size:11px}
+.ann-body{color:#b0c0d5;line-height:1.7;font-size:13px}
+.ann-tag{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:rgba(245,200,66,.1);color:var(--accent);margin-top:6px}
+.login-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:5000;backdrop-filter:blur(6px)}
+.login-overlay.visible{display:flex}
+.login-box{width:360px;background:#0c1b2d;border:1px solid rgba(201,168,76,.15);border-radius:22px;padding:30px;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:popIn .25s ease}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+.login-box h2{text-align:center;margin:10px 0 20px;font-size:20px;color:var(--accent)}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:4px}
+.field input,.field textarea,.field select{width:100%;border:1px solid rgba(255,255,255,.08);outline:none;background:#071320;color:white;padding:11px 14px;border-radius:10px;font-family:'Cairo',sans-serif;font-size:13px;transition:.2s;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:rgba(245,200,66,.35)}
+.field select option{background:#0c1b2d}
+.btn{width:100%;border:none;background:linear-gradient(135deg,var(--blue),var(--blue2));color:white;padding:11px;border-radius:10px;cursor:pointer;font-weight:700;font-size:14px;font-family:'Cairo',sans-serif;transition:.2s;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{opacity:.9;transform:translateY(-1px)}
+.btn-sm{width:auto;padding:6px 14px;font-size:12px}
+.btn-danger{background:rgba(231,76,60,.12);color:var(--danger);border:1px solid rgba(231,76,60,.3)}
+.btn-danger:hover{background:var(--danger);color:#fff}
+.btn-success{background:rgba(46,204,113,.12);color:var(--success);border:1px solid rgba(46,204,113,.3)}
+.btn-success:hover{background:var(--success);color:#fff}
+.btn-gold{background:rgba(245,200,66,.1);color:var(--accent);border:1px solid rgba(245,200,66,.25)}
+.btn-gold:hover{background:var(--accent);color:#000}
+.btn-ghost{width:100%;border:1px solid rgba(255,255,255,.08);background:transparent;color:var(--muted);padding:9px;border-radius:10px;cursor:pointer;font-size:12px;font-family:'Cairo',sans-serif;margin-top:8px;transition:.2s}
+.btn-ghost:hover{color:white;border-color:rgba(255,255,255,.15)}
+.login-error{color:var(--danger);font-size:12px;text-align:center;margin-bottom:10px;display:none}
+.login-error.show{display:block}
+.dashboard{display:none}
+.dashboard.active{display:block}
+.layout{display:flex;min-height:calc(100vh - 60px)}
+.sidebar{width:220px;background:rgba(8,21,37,.92);border-left:1px solid var(--border);padding:18px 12px;backdrop-filter:blur(10px);flex-shrink:0}
+.sidebar-label{color:var(--muted);font-size:10px;font-weight:700;letter-spacing:1px;padding:0 8px;margin:12px 0 6px;text-transform:uppercase}
+.side-btn{width:100%;margin-bottom:3px;border:none;background:transparent;color:#8099b5;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:right;font-family:'Cairo',sans-serif;font-size:13px;display:flex;align-items:center;gap:8px;transition:.15s}
+.side-btn:hover{background:rgba(255,255,255,.05);color:white}
+.side-btn.active{background:rgba(26,111,196,.2);color:white;border:1px solid rgba(37,102,204,.3)}
+.side-btn-icon{font-size:16px;width:22px;text-align:center}
+.content{flex:1;padding:22px;overflow-y:auto}
+.hidden{display:none!important}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px;text-align:center}
+.stat-card:hover{border-color:rgba(245,200,66,.15)}
+.stat-num{font-size:24px;font-weight:900;color:var(--accent2);display:block}
+.stat-label{font-size:11px;color:var(--muted);margin-top:4px}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:rgba(255,255,255,.03)}
+th,td{padding:10px 14px;text-align:right;border-bottom:1px solid var(--border)}
+th{color:var(--muted);font-weight:700;font-size:11px;letter-spacing:.5px}
+td{color:var(--text)}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody tr:last-child td{border-bottom:none}
+.badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:700}
+.badge.pending{background:rgba(243,156,18,.12);color:var(--warning);border:1px solid rgba(243,156,18,.25)}
+.badge.accepted{background:rgba(46,204,113,.12);color:var(--success);border:1px solid rgba(46,204,113,.25)}
+.badge.rejected{background:rgba(231,76,60,.12);color:var(--danger);border:1px solid rgba(231,76,60,.25)}
+.action-btn{padding:5px 10px;border-radius:6px;font-size:11px;cursor:pointer;border:none;font-family:'Cairo',sans-serif;font-weight:700;transition:.15s}
+.action-btn.accept{background:rgba(46,204,113,.15);color:var(--success)}
+.action-btn.accept:hover{background:var(--success);color:#000}
+.action-btn.reject{background:rgba(231,76,60,.15);color:var(--danger)}
+.action-btn.reject:hover{background:var(--danger);color:#fff}
+.action-btn.delete{background:rgba(231,76,60,.1);color:var(--danger)}
+.action-btn.delete:hover{background:var(--danger);color:#fff}
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+.form-card h3{font-size:15px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.toast-container{position:fixed;bottom:20px;left:20px;z-index:9999}
+.toast{background:#0c1b2d;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 16px;margin-top:8px;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,.5);font-size:13px;max-width:300px;animation:slideUp .3s ease}
+@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.toast.success{border-right:3px solid var(--success)}
+.toast.error{border-right:3px solid var(--danger)}
+.toast.info{border-right:3px solid var(--blue2)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .icon{font-size:40px;margin-bottom:10px}
+.empty-state p{font-size:14px}
+.profile-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;display:flex;align-items:center;gap:18px;margin-bottom:20px}
+.avatar{width:56px;height:56px;background:linear-gradient(135deg,var(--blue),var(--blue2));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0}
+.profile-info h2{font-size:18px;margin-bottom:2px}
+.profile-info p{color:var(--muted);font-size:13px}
+.role-tag{background:rgba(26,111,196,.15);border:1px solid rgba(37,102,204,.25);color:var(--blue2);padding:3px 12px;border-radius:14px;font-size:11px;font-weight:700;display:inline-block;margin:2px}
+.owner-badge{background:rgba(245,200,66,.12);color:var(--accent);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.user-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px}
+.user-card:hover{border-color:rgba(245,200,66,.15)}
+.user-card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.user-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--blue2));display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.user-card-name{font-size:14px;font-weight:700}
+.user-card-username{color:var(--muted);font-size:11px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;align-items:center;justify-content:center;z-index:6000;backdrop-filter:blur(6px)}
+.modal-overlay.visible{display:flex}
+.modal-box{width:440px;max-width:94%;background:#0c1b2d;border:1px solid rgba(201,168,76,.15);border-radius:20px;padding:26px;box-shadow:0 24px 60px rgba(0,0,0,.6);animation:popIn .25s ease;max-height:90vh;overflow-y:auto}
+.modal-box h2{font-size:17px;color:var(--accent);margin-bottom:16px;text-align:center}
+/* Cert Preview */
+.cert-doc{background:#0d2247;border:3px solid #c9a84c;box-shadow:0 0 0 2px #071529,0 0 0 5px #c9a84c;border-radius:4px;padding:20px 24px 16px;position:relative;font-family:'Cairo',sans-serif}
+.cc{position:absolute;width:20px;height:20px;border-color:#d4af6a;border-style:solid}
+.cc.tl{top:6px;right:6px;border-width:2px 0 0 2px}
+.cc.tr{top:6px;left:6px;border-width:2px 2px 0 0}
+.cc.bl{bottom:6px;right:6px;border-width:0 0 2px 2px}
+.cc.br{bottom:6px;left:6px;border-width:0 2px 2px 0}
+.cert-doc-title{text-align:center;font-size:11px;font-weight:900;color:#f0d080;letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.cert-doc-dept{text-align:center;font-size:7px;color:#a0b8d0;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.cert-hr{border:none;height:1px;background:linear-gradient(to left,transparent,#c9a84c,transparent);margin:5px 0}
+.cert-name-area{text-align:center;margin:8px 0 4px}
+.cert-name-lbl{font-size:8px;color:#7a9ab8;letter-spacing:.8px}
+.cert-name-val{font-size:20px;font-weight:700;color:#e8d898;letter-spacing:1px;display:inline-block;padding-bottom:2px;min-width:120px}
+.cert-promoted-lbl{font-size:8px;color:#c0d0e0;text-align:center;margin:5px 0 3px}
+.cert-rank-val{font-size:18px;font-weight:900;color:#fff;text-align:center;margin-bottom:6px}
+.cert-desc-text{font-size:8px;color:#8aacca;text-align:center;line-height:1.7;font-style:italic;margin-bottom:8px}
+.cert-footer{display:flex;align-items:flex-end;justify-content:space-between;padding-top:6px;border-top:1px solid rgba(201,168,76,.25)}
+.cert-seal{width:36px;height:36px}
+.cert-date-area{text-align:center;flex:1;font-size:7px;color:#7a9ab8}
+.cert-sig-area{text-align:left;font-size:7px;color:#8899bb}
+.cert-sig-name{font-size:11px;color:#d4c898;font-style:italic}
+.cert-id-text{font-size:6px;color:#4a6a88;text-align:center;margin-top:2px;letter-spacing:1px}
+.cert-course-val{font-size:16px;font-weight:700;color:var(--gold2);text-align:center;margin-bottom:4px}
+.cert-grade{font-size:10px;color:#88ccff;text-align:center;margin-bottom:6px}
+/* Settings toggles */
+.setting-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
+.setting-info h4{font-size:13px;margin-bottom:2px}
+.setting-info p{color:var(--muted);font-size:11px}
+.toggle-btn{padding:6px 16px;border-radius:8px;border:1px solid;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;font-weight:700;transition:.2s}
+.toggle-btn.on{background:rgba(46,204,113,.12);color:var(--success);border-color:rgba(46,204,113,.25)}
+.toggle-btn.off{background:rgba(231,76,60,.12);color:var(--danger);border-color:rgba(231,76,60,.25)}
+.toggle-btn:hover{opacity:.8}
+.q-item{background:rgba(5,13,26,.7);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.q-text{flex:1;font-size:13px;color:var(--text)}
+.q-type-badge{font-size:9px;padding:2px 8px;border-radius:10px;background:rgba(26,111,196,.12);border:1px solid rgba(26,111,196,.2);color:var(--blue2)}
+.report-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;border-right:3px solid var(--blue)}
+.report-card:hover{border-color:rgba(26,111,196,.25);border-right-color:var(--blue)}
+@media(max-width:900px){.layout{flex-direction:column}.sidebar{width:100%}.form-row,.form-row3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="toast-container" id="toast-container"></div>
+
+<nav>
+  <div class="logo"><div class="logo-badge">⭐</div> LSPD PORTAL</div>
+  <div class="nav-links">
+    <button class="nav-btn gold" onclick="showPublic('home')">🏠</button>
+    <button class="nav-btn" onclick="showPublic('ann')">📢 الإعلانات</button>
+    <button class="nav-btn" onclick="showPublic('apply')">📋 تقديم</button>
+    <button class="nav-btn" onclick="showPublic('ranks')">🏅 الرتب</button>
+    <button class="nav-btn" onclick="showPublic('certs')">🎓 شهادات</button>
+    <button class="nav-btn" onclick="showPublic('report')">📊 تقرير</button>
+    <button class="nav-btn primary" onclick="openLogin()" id="login-btn">🔑 دخول</button>
+    <button class="nav-btn" id="nav-user-btn" style="display:none" onclick="logout()"><span id="nav-user-display"></span> 🚪</button>
+  </div>
+</nav>
+
+<div class="container public-page">
+  <div id="pub-home">
+    <div class="hero">
+      <h1>بوابة <span>LSPD</span> الرسمية</h1>
+      <p>نظام متكامل • تقديم • نقل • شهادات • تقارير • رتب</p>
+      <div class="grid">
+        <div class="card" onclick="showPublic('apply')" style="cursor:pointer"><div class="card-icon">📋</div><h3>تقديم / نقل</h3><p>تقديم طلب انضمام أو نقل داخلي</p></div>
+        <div class="card"><div class="card-icon">📊</div><h3>تقديم تقرير</h3><p>رفع تقرير عام بدون تسجيل</p></div>
+        <div class="card"><div class="card-icon">🎓</div><h3>الشهادات</h3><p>عرض الشهادات الصادرة</p></div>
+      </div>
+    </div>
+    <div class="section-title">📢 آخر الإعلانات</div>
+    <div id="pub-ann-home"></div>
+  </div>
+  <div id="pub-ann" class="hidden"><div class="section-title">📢 الإعلانات</div><div id="pub-ann-list"></div></div>
+  <div id="pub-apply" class="hidden"><div class="section-title">📋 تقديم</div><div id="pub-apply-content"></div></div>
+  <div id="pub-ranks" class="hidden"><div class="section-title">🏅 الرتب</div><div id="pub-ranks-list"></div></div>
+  <div id="pub-certs" class="hidden"><div class="section-title">🎓 الشهادات الصادرة</div><div id="pub-certs-list"></div></div>
+  <div id="pub-report" class="hidden"><div class="section-title">📊 تقديم تقرير عام</div><div id="pub-report-content"></div></div>
+</div>
+
+<div class="dashboard" id="dashboard">
+  <div class="layout">
+    <div class="sidebar">
+      <div class="sidebar-label">القائمة</div>
+      <button class="side-btn active" onclick="showDash('home',this)"><span class="side-btn-icon">🏠</span> الرئيسية</button>
+      <button class="side-btn hidden" id="sb-reports" onclick="showDash('reports',this)"><span class="side-btn-icon">📊</span> التقارير</button>
+      <button class="side-btn hidden" id="sb-apps" onclick="showDash('apps',this)"><span class="side-btn-icon">📋</span> التقديمات</button>
+      <button class="side-btn hidden" id="sb-transfers" onclick="showDash('transfers',this)"><span class="side-btn-icon">🔄</span> النقل</button>
+      <button class="side-btn hidden" id="sb-certs" onclick="showDash('certs',this)"><span class="side-btn-icon">🎓</span> الشهادات</button>
+      <button class="side-btn hidden" id="sb-pubreports" onclick="showDash('pubreports',this)"><span class="side-btn-icon">📝</span> التقارير العامة</button>
+      <button class="side-btn hidden" id="sb-division" onclick="showDash('division',this)"><span class="side-btn-icon">👥</span> أعضاء الأقسام</button>
+      <button class="side-btn hidden" id="sb-logs" onclick="showDash('logs',this)"><span class="side-btn-icon">📜</span> السجلات</button>
+      <button class="side-btn hidden" id="sb-settings" onclick="showDash('settings',this)"><span class="side-btn-icon">⚙️</span> الإعدادات</button>
+      <button class="side-btn hidden" id="sb-accounts" onclick="showDash('accounts',this)"><span class="side-btn-icon">👥</span> الحسابات</button>
+      <div class="sidebar-label" style="margin-top:16px">الحساب</div>
+      <button class="side-btn" onclick="logout()"><span class="side-btn-icon">🚪</span> خروج</button>
+    </div>
+    <div class="content">
+      <div id="dash-home">
+        <div id="dash-profile"></div>
+        <div id="dash-stats" class="stat-grid"></div>
+        <div id="dash-member-stats" class="stat-grid" style="display:none"></div>
+        <div class="section-title">📢 الإعلانات</div>
+        <div id="dash-ann"></div>
+      </div>
+      <div id="dash-reports" class="hidden"><div class="section-title">📊 التقارير الداخلية</div><div id="dash-reports-create" class="hidden"></div><div id="dash-reports-list"></div></div>
+      <div id="dash-apps" class="hidden"><div class="section-title">📋 التقديمات</div><div id="dash-apps-table"></div></div>
+      <div id="dash-transfers" class="hidden"><div class="section-title">🔄 طلبات النقل</div><div id="dash-transfers-table"></div></div>
+      <div id="dash-certs" class="hidden"><div class="section-title">🎓 إدارة الشهادات</div><div id="dash-certs-content"></div></div>
+      <div id="dash-pubreports" class="hidden"><div class="section-title">📝 التقارير العامة</div><div id="dash-pubreports-list"></div></div>
+      <div id="dash-division" class="hidden"><div class="section-title">👥 أعضاء الأقسام</div><div id="dash-division-content"></div></div>
+      <div id="dash-logs" class="hidden"><div class="section-title">📜 السجلات</div><button class="btn btn-sm btn-danger" onclick="clearLogs()" style="margin-bottom:12px;width:auto">🗑️ مسح</button><div id="dash-logs-table"></div></div>
+      <div id="dash-settings" class="hidden">
+        <div class="section-title">⚙️ الإعدادات</div>
+        <div id="dash-settings-list"></div>
+        <div class="section-title" style="margin-top:20px">❓ أسئلة التقديم</div>
+        <div id="dash-questions-app"></div>
+        <div class="section-title" style="margin-top:20px">❓ أسئلة النقل</div>
+        <div id="dash-questions-transfer"></div>
+      </div>
+      <div id="dash-accounts" class="hidden"><div class="section-title">👥 الحسابات</div><div id="dash-accounts-content"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="login-overlay" id="login-overlay">
+  <div class="login-box">
+    <div class="login-logo" style="text-align:center;font-size:28px;margin-bottom:6px">⭐</div>
+    <h2>تسجيل الدخول</h2>
+    <div class="login-error" id="login-error">❌ بيانات غير صحيحة</div>
+    <div class="field"><label>اسم المستخدم</label><input type="text" id="li-user" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="field"><label>كلمة المرور</label><input type="password" id="li-pass" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn" onclick="doLogin()">دخول</button>
+    <button class="btn-ghost" onclick="closeLogin()">إلغاء</button>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin;
+let token = localStorage.getItem('lspd_token') || null;
+let currentUser = null;
+
+function h(){const o={'Content-Type':'application/json'};if(token)o['Authorization']=`Bearer ${token}`;return o}
+async function api(m,p,b){const r=await fetch(`${API}${p}`,{method:m,headers:h(),body:b?JSON.stringify(b):null});const d=await r.json();if(!r.ok)throw new Error(d.error||'Request failed');return d}
+
+function toast(msg,t='info'){
+  const icons={success:'✅',error:'❌',info:'ℹ️'}
+  const el=document.createElement('div');el.className=`toast ${t}`
+  el.innerHTML=`<span>${icons[t]}</span><span>${msg}</span>`
+  document.getElementById('toast-container').appendChild(el)
+  setTimeout(()=>el.remove(),3000)
+}
+
+/* ─── AUTH ─── */
+function openLogin(){document.getElementById('login-overlay').classList.add('visible');document.getElementById('li-user').focus()}
+function closeLogin(){document.getElementById('login-overlay').classList.remove('visible');document.getElementById('login-error').classList.remove('show')}
+
+async function doLogin(){
+  const u=document.getElementById('li-user').value.trim(),p=document.getElementById('li-pass').value.trim()
+  if(!u||!p){toast('أدخل اسم المستخدم وكلمة المرور','error');return}
+  try{
+    const r=await api('POST','/api/login',{username:u,password:p})
+    token=r.token;currentUser=r.user;localStorage.setItem('lspd_token',token)
+    closeLogin();enterDashboard()
+    toast(`أهلاً ${currentUser.display_name}`,'success')
+  }catch(e){document.getElementById('login-error').textContent=`❌ ${e.message}`;document.getElementById('login-error').classList.add('show')}
+}
+
+async function checkAuth(){
+  if(!token)return
+  try{currentUser=await api('GET','/api/me');enterDashboard()}
+  catch{localStorage.removeItem('lspd_token');token=null}
+}
+
+function enterDashboard(){
+  document.querySelector('.public-page').style.display='none'
+  document.getElementById('dashboard').classList.add('active')
+  document.getElementById('login-btn').style.display='none'
+  document.getElementById('nav-user-btn').style.display='flex'
+  document.getElementById('nav-user-display').textContent=currentUser.emoji+' '+currentUser.display_name
+  setupDash()
+  showDash('home',document.querySelector('.side-btn'))
+}
+
+function logout(){
+  token=null;currentUser=null;localStorage.removeItem('lspd_token')
+  document.querySelector('.public-page').style.display='block'
+  document.getElementById('dashboard').classList.remove('active')
+  document.getElementById('login-btn').style.display=''
+  document.getElementById('nav-user-btn').style.display='none'
+  showPublic('home')
+}
+
+/* ─── PUBLIC PAGES ─── */
+function showPublic(p){
+  if(!currentUser&&(p==='certs'||p==='report')){toast('🚫 غير مسموح للزوار','error');showPublic('home');return}
+  if(currentUser&&currentUser.role==='VISITOR'&&(p==='certs'||p==='report')){toast('🚫 غير مسموح','error');showPublic('home');return}
+  const dash=document.getElementById('dashboard')
+  if(dash.classList.contains('active')){
+    if((p==='certs'&&can('certificates','full'))||(p==='apply'&&can('applications','create'))){
+      if(p==='certs'){const sb=document.querySelector('#sb-certs');if(sb)showDash('certs',sb)}
+      else showDash('apps',document.querySelector('#sb-apps'))
+      return
+    }
+    dash.classList.remove('active')
+    document.querySelector('.public-page').style.display='block'
+    document.getElementById('nav-user-btn').onclick=function(){enterDashboard();document.getElementById('nav-user-btn').onclick=logout}
+    document.getElementById('nav-user-btn').title='العودة إلى لوحة التحكم'
+  }
+  document.querySelectorAll('.public-page > div').forEach(d=>d.classList.add('hidden'))
+  const el=document.getElementById('pub-'+p);if(el)el.classList.remove('hidden')
+  if(p==='home'||p==='ann')loadAnnouncements()
+  if(p==='apply')renderPublicApply()
+  if(p==='ranks')loadRanks()
+  if(p==='certs')loadPublicCerts()
+  if(p==='report')renderPublicReport()
+}
+
+async function loadAnnouncements(){
+  try{const a=await api('GET','/api/announcements')
+  document.getElementById('pub-ann-home').innerHTML=a.slice(0,3).map(x=>`<div class="ann"><div class="ann-header"><div class="ann-title">${x.title}</div><div class="ann-date">📅 ${x.date}</div></div><div class="ann-body">${x.body}</div></div>`).join('')||'<div class="empty-state"><p>لا توجد إعلانات</p></div>'
+  document.getElementById('pub-ann-list').innerHTML=a.map(x=>`<div class="ann"><div class="ann-header"><div class="ann-title">${x.title}</div><div class="ann-date">📅 ${x.date}</div></div><div class="ann-body">${x.body}<span class="ann-tag">إعلان رسمي</span></div></div>`).join('')}catch{}
+}
+
+async function renderPublicApply(){
+  const c=document.getElementById('pub-apply-content')
+  try{
+    const s=await api('GET','/api/settings')
+    const bothClosed=s.applications_open==='false'&&s.transfers_open==='false'
+    if(bothClosed){c.innerHTML=`<div class="empty-state"><div class="icon">🔒</div><p>التقديم والنقل مغلقان حالياً</p></div>`;return}
+    c.innerHTML=`<div class="form-card"><h3>📝 اختر نوع الطلب</h3>
+      <div class="field"><label>نوع الطلب</label>
+      <select id="apply-type" onchange="renderPublicForm()">
+        <option value="application"${s.applications_open!=='false'?' selected':''}>📋 تقديم انضمام</option>
+        <option value="transfer"${s.transfers_open!=='false'&&s.applications_open==='false'?' selected':''}>🔄 طلب نقل</option>
+      </select></div>
+      <div id="apply-form-body"></div></div>`
+    renderPublicForm()
+  }catch(e){c.innerHTML=`<div class="empty-state"><div class="icon">⚠️</div><p>تعذر تحميل النموذج: ${e.message||'خطأ في الاتصال'}</p></div>`}
+}
+
+function renderPublicForm(){
+  const type=document.getElementById('apply-type').value
+  renderPublicApplyInner(type)
+}
+
+async function renderPublicApplyInner(type){
+  const key=type+'s_open',label=type==='transfer'?'النقل':'التقديم'
+  const fb=document.getElementById('apply-form-body')
+  try{
+    const s=await api('GET','/api/settings')
+    const open=s[key]!=='false'
+    if(!open){fb.innerHTML=`<div class="empty-state"><div class="icon">🔒</div><p>${label} مغلق حالياً</p></div>`;return}
+    const qs=await api('GET',`/api/questions/${type}`)
+    let qHtml=qs.map((q,i)=>q.type==='yesno'
+      ?`<div class="field"><label>${q.text}</label><select id="q-${type}-${q.id}"><option value="نعم">نعم</option><option value="لا">لا</option></select></div>`
+      :`<div class="field"><label>${q.text}</label><input type="text" id="q-${type}-${q.id}" placeholder="إجابتك..."></div>`).join('')
+    fb.innerHTML=`
+      <div class="form-row"><div class="field"><label>الاسم الكامل</label><input type="text" id="${type}-name" placeholder="الاسم"></div>
+      <div class="field"><label>الديسكورد</label><input type="text" id="${type}-discord" placeholder="user#0000"></div></div>
+      ${type==='transfer'?`<div class="field"><label>القسم الحالي</label><input type="text" id="transfer-current" placeholder="القسم الحالي"></div>`:''}
+      ${qHtml}
+      <button class="btn" onclick="submitPublicApp()">📩 إرسال</button>`
+  }catch(e){fb.innerHTML=`<div class="empty-state"><div class="icon">⚠️</div><p>تعذر تحميل النموذج: ${e.message||'خطأ في الاتصال'}</p></div>`}
+}
+
+async function submitPublicApp(){
+  const type=document.getElementById('apply-type').value
+  const n=document.getElementById(type+'-name').value.trim(),d=document.getElementById(type+'-discord').value.trim()
+  if(!n||!d){toast('أدخل الاسم والديسكورد','error');return}
+  const body={type,name:n,discord:d,reason:''}
+  if(type==='transfer')body.current_department=document.getElementById('transfer-current').value.trim()
+  try{
+    const qs=await api('GET',`/api/questions/${type}`)
+    const answers={};qs.forEach(q=>{const el=document.getElementById(`q-${type}-${q.id}`);if(el)answers[q.id]=el.value})
+    body.answers=JSON.stringify(answers)
+    await api('POST','/api/applications',body)
+    toast('✅ تم الإرسال بنجاح','success')
+    document.querySelectorAll('#apply-form-body input').forEach(i=>i.value='')
+  }catch(e){toast(e.message,'error')}
+}
+
+async function loadRanks(){
+  try{
+    const r=await api('GET','/api/ranks')
+    const order=['OWNER','FULL ACCESS','FTO CHIEF','FTO MEMBER','IA CHIEF','IA MEMBER','WING COMMANDER','WINGS','APPLICANT VIEWER','VISITOR']
+    document.getElementById('pub-ranks-list').innerHTML=order.map(k=>{const v=r[k];return v?`<div class="stat-card"><div style="font-size:32px;margin-bottom:6px">${v.emoji}</div><div style="font-weight:700;color:var(--accent)">${k}</div><div style="font-size:11px;color:var(--muted);margin-top:4px">المستوى ${v.level}</div></div>`:''}).join('')
+  }catch{}
+}
+
+async function loadPublicCerts(){
+  try{
+    const c=await api('GET','/api/certificates?public=true')
+    document.getElementById('pub-certs-list').innerHTML=c.length?c.map(x=>`<div class="ann" style="border-right-color:var(--blue)"><div class="ann-header"><div class="ann-title">🎓 ${x.cert_type} — ${x.officer_name}</div><div class="ann-date">📅 ${x.issue_date}</div></div><div class="ann-body">الرتبة: ${x.rank_name} | بواسطة: ${x.issued_name||'—'}</div></div>`).join(''):'<div class="empty-state"><div class="icon">📭</div><p>لا توجد شهادات</p></div>'
+  }catch{}
+}
+
+function renderPublicReport(){
+  document.getElementById('pub-report-content').innerHTML=`<div class="form-card"><h3>📝 تقديم تقرير عام</h3>
+    <div class="form-row">
+      <div class="field"><label>الاسم</label><input type="text" id="pr-name" placeholder="اسمك"></div>
+      <div class="field"><label>القسم</label><select id="pr-division"><option value="">—</option><option value="IA">IA</option><option value="FTO">FTO</option><option value="WINGS">WINGS</option></select></div>
+    </div>
+    <div class="field"><label>نص التقرير</label><textarea id="pr-body" rows="4" placeholder="تفاصيل التقرير..."></textarea></div>
+    <div class="field"><label>رابط (اختياري)</label><input type="text" id="pr-link" placeholder="https://..."></div>
+    <button class="btn" onclick="submitPublicReport()">📩 إرسال التقرير</button></div>`
+}
+
+async function submitPublicReport(){
+  if(!currentUser||currentUser.role==='VISITOR'){toast('🚫 غير مسموح للزوار','error');return}
+  const n=document.getElementById('pr-name').value.trim(),b=document.getElementById('pr-body').value.trim()
+  if(!n||!b){toast('أدخل الاسم ونص التقرير','error');return}
+  try{
+    await api('POST','/api/public-reports',{name:n,rank:document.getElementById('pr-division').value,body:b,link:document.getElementById('pr-link').value.trim()})
+    document.getElementById('pr-name').value='';document.getElementById('pr-division').value='';document.getElementById('pr-body').value='';document.getElementById('pr-link').value=''
+    toast('✅ تم إرسال التقرير','success')
+  }catch(e){toast(e.message,'error')}
+}
+
+/* ─── PERMISSIONS ─── */
+const PERM={certificates:{OWNER:'full','FULL ACCESS':'full','FTO CHIEF':'full','FTO MEMBER':'full','IA CHIEF':'full','IA MEMBER':'full','WING COMMANDER':'full','WINGS':'full','APPLICANT VIEWER':'full','VISITOR':'full'},reports:{OWNER:'full','FULL ACCESS':'full','FTO CHIEF':'full','FTO MEMBER':'create','IA CHIEF':'full','IA MEMBER':'full','WING COMMANDER':'full','WINGS':'full'},applications:{OWNER:'full','FULL ACCESS':'full','FTO CHIEF':'full','FTO MEMBER':'view','IA CHIEF':'full','IA MEMBER':'none','WING COMMANDER':'full','WINGS':'none','APPLICANT VIEWER':'view','VISITOR':'none'},logs:{OWNER:'full','FULL ACCESS':'full'},accounts:{OWNER:'full','FULL ACCESS':'full'},settings:{OWNER:'full','FULL ACCESS':'full','FTO CHIEF':'full'},division_members:{OWNER:'full','FULL ACCESS':'full','FTO CHIEF':'full','IA CHIEF':'full','WING COMMANDER':'full'}}
+function can(f,l='view'){if(currentUser?.is_owner)return true;const p=PERM[f]?.[currentUser?.role]||'none';if(l==='view')return p==='full'||p==='view'||p==='create';if(l==='create')return p==='full'||p==='create';if(l==='full')return p==='full';return false}
+
+/* ─── DASHBOARD ─── */
+async function setupDash(){
+  const isHead=currentUser.is_owner||currentUser.role==='FULL ACCESS'
+  const btns={reports:['reports','view'],apps:['applications','view'],transfers:['applications','view'],certs:['certificates','full'],pubreports:['applications','view'],division:['division_members','full'],logs:['logs','full'],settings:['settings','full'],accounts:['accounts','full']}
+  Object.entries(btns).forEach(([id,[f,l]])=>{document.getElementById('sb-'+id).classList.toggle('hidden',id==='pubreports'?!isHead:!can(f,l))})
+  document.getElementById('dash-profile').innerHTML=`<div class="profile-card"><div class="avatar">${currentUser.emoji}</div><div class="profile-info"><h2>${currentUser.display_name} ${currentUser.is_owner?'<span class="owner-badge">👑 مالك</span>':''}</h2><p>${currentUser.role}</p></div></div>`
+  await loadDashData()
+  renderStats()
+  renderMemberStats()
+  renderDashAnn()
+  renderDashReports()
+  renderDashApps('apps','dash-apps-table','application')
+  renderDashApps('transfers','dash-transfers-table','transfer')
+  renderDashCerts()
+  renderDashPubReports()
+  renderDashDivision()
+  renderDashLogs()
+  renderDashSettings()
+  renderDashAccounts()
+  renderQuestions('application','dash-questions-app')
+  renderQuestions('transfer','dash-questions-transfer')
+}
+
+async function loadDashData(){
+  try{window._ann=await api('GET','/api/announcements')}catch{}
+  if(can('applications','view')){try{window._apps=await api('GET','/api/applications?type=application')}catch{};try{window._transfers=await api('GET','/api/applications?type=transfer')}catch{}}
+  if(can('reports','view'))try{window._reports=await api('GET','/api/reports')}catch{}
+  if(can('logs','full'))try{window._logs=await api('GET','/api/logs')}catch{}
+  if(can('settings','full'))try{window._settings=await api('GET','/api/settings')}catch{}
+  if(can('accounts','full')){try{window._users=await api('GET','/api/users')}catch{};try{window._memberStats=await api('GET','/api/stats/members')}catch{}}
+  try{window._certs=await api('GET','/api/certificates')}catch{}
+  if(can('division_members','full'))try{window._divisionMembers=await api('GET','/api/division-members')}catch{}
+  const _isHead=currentUser.is_owner||currentUser.role==='FULL ACCESS'
+  if(_isHead)try{window._pubReports=await api('GET','/api/public-reports')}catch{}
+}
+
+function renderStats(){
+  if(!can('applications','view')){document.getElementById('dash-stats').innerHTML='';return}
+  const a=window._apps||[],t=window._transfers||[]
+  document.getElementById('dash-stats').innerHTML=`<div class="stat-card"><span class="stat-num">${a.length+t.length}</span><div class="stat-label">إجمالي الطلبات</div></div>
+    <div class="stat-card"><span class="stat-num">${a.filter(x=>x.status==='pending').length+t.filter(x=>x.status==='pending').length}</span><div class="stat-label">قيد المراجعة</div></div>
+    <div class="stat-card"><span class="stat-num">${a.filter(x=>x.status==='accepted').length+t.filter(x=>x.status==='accepted').length}</span><div class="stat-label">مقبولة</div></div>
+    <div class="stat-card"><span class="stat-num">${(window._certs||[]).length}</span><div class="stat-label">الشهادات</div></div>`
+}
+
+function renderMemberStats(){
+  const el=document.getElementById('dash-member-stats')
+  if(!can('accounts','full')){el.style.display='none';return}
+  const s=window._memberStats||{}
+  el.style.display='grid'
+  el.innerHTML=`<div class="stat-card"><span class="stat-num">${s.total||0}</span><div class="stat-label">إجمالي الأعضاء</div></div>
+    ${['FULL ACCESS','FTO CHIEF','FTO MEMBER','IA CHIEF','IA MEMBER','WING COMMANDER','WINGS'].map(r=>`<div class="stat-card"><span class="stat-num">${s[r]||0}</span><div class="stat-label">${r}</div></div>`).join('')}`
+}
+
+function renderDashAnn(){
+  const a=window._ann||[]
+  document.getElementById('dash-ann').innerHTML=a.length?a.slice(0,4).map(x=>`<div class="ann"><div class="ann-header"><div class="ann-title">${x.title}</div><div class="ann-date">📅 ${x.date}</div></div><div class="ann-body">${x.body}</div></div>`).join(''):'<div class="empty-state"><p>لا توجد إعلانات</p></div>'
+}
+
+/* ─── DASHBOARD NAV ─── */
+function showDash(id,btn){
+  document.querySelectorAll('.content > div').forEach(d=>d.classList.add('hidden'))
+  document.getElementById('dash-'+id).classList.remove('hidden')
+  document.querySelectorAll('.side-btn').forEach(b=>b.classList.remove('active'))
+  if(btn)btn.classList.add('active')
+}
+
+/* ─── REPORTS ─── */
+function renderDashReports(){
+  if(!can('reports','view'))return
+  document.getElementById('dash-reports-create').innerHTML=can('reports','create')?`<div class="form-card"><h3>📊 إضافة تقرير</h3><div class="field"><label>العنوان</label><input type="text" id="rep-title"></div><div class="field"><label>المحتوى</label><textarea id="rep-body" rows="3"></textarea></div><button class="btn btn-sm" onclick="createDashReport()">📊 نشر</button></div>`:''
+  const r=window._reports||[]
+  document.getElementById('dash-reports-list').innerHTML=r.length?r.map(x=>`<div class="ann" style="border-right-color:var(--blue)"><div class="ann-header"><div class="ann-title">📊 ${x.title}</div><div class="ann-date">${x.date?.slice(0,10)}</div></div><div class="ann-body">${x.body}<br><span class="ann-tag">بواسطة ${x.author_name||'—'}</span>${can('reports','full')?`<button class="action-btn delete" onclick="deleteDashReport(${x.id})" style="float:left;margin-top:4px">🗑️</button>`:''}</div></div>`).join(''):'<div class="empty-state"><p>لا توجد تقارير</p></div>'
+}
+
+async function createDashReport(){
+  const t=document.getElementById('rep-title').value.trim(),b=document.getElementById('rep-body').value.trim()
+  if(!t||!b){toast('أدخل العنوان والمحتوى','error');return}
+  try{await api('POST','/api/reports',{title:t,body:b});document.getElementById('rep-title').value='';document.getElementById('rep-body').value='';window._reports=await api('GET','/api/reports');renderDashReports();toast('✅ تم النشر','success')}catch(e){toast(e.message,'error')}
+}
+
+async function deleteDashReport(id){if(!confirm('حذف؟'))return;try{await api('DELETE',`/api/reports/${id}`);window._reports=await api('GET','/api/reports');renderDashReports();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── APPLICATIONS ─── */
+function renderDashApps(type,elId,filter){
+  const data=type==='transfers'?window._transfers||[]:window._apps||[]
+  const tbody=document.getElementById(elId)
+  if(!data.length){tbody.innerHTML=`<div class="empty-state"><p>لا توجد ${type==='transfers'?'طلبات نقل':'تقديمات'}</p></div>`;return}
+  tbody.innerHTML=`<div class="table-wrap"><table><thead><tr><th>#</th><th>الاسم</th><th>الديسكورد</th><th>${type==='transfers'?'القسم':'السبب'}</th><th>التاريخ</th><th>الحالة</th>${can('applications','full')?'<th>الإجراء</th>':''}</tr></thead><tbody>${data.map((a,i)=>`<tr><td>${i+1}</td><td>${a.name}</td><td>${a.discord}</td><td>${a.reason||a.current_department||'—'}</td><td>${a.date}</td><td><span class="badge ${a.status}">${sLbl(a.status)}</span></td>${can('applications','full')?`<td>${a.status==='pending'?`<button class="action-btn accept" onclick="updateAppStatus(${a.id},'accepted','${filter}')">✅</button><button class="action-btn reject" onclick="updateAppStatus(${a.id},'rejected','${filter}')">❌</button>`:''}<button class="action-btn delete" onclick="deleteApp(${a.id},'${filter}')">🗑️</button></td>`:''}</tr>`).join('')}</tbody></table></div>`
+}
+function sLbl(s){return{pending:'قيد المراجعة',accepted:'مقبول',rejected:'مرفوض'}[s]||s}
+
+async function updateAppStatus(id,status,type){
+  try{await api('PUT',`/api/applications/${id}/status`,{status});const f=type==='transfer'?'transfers':'apps';window['_'+f]=await api('GET',`/api/applications?type=${type}`);renderDashApps(type==='transfer'?'transfers':'apps','dash-'+f+'-table',type);renderStats();toast(status==='accepted'?'✅ تم القبول':'❌ تم الرفض',status==='accepted'?'success':'error')}catch(e){toast(e.message,'error')}
+}
+async function deleteApp(id,type){if(!confirm('حذف؟'))return;try{await api('DELETE',`/api/applications/${id}`);const f=type==='transfer'?'transfers':'apps';window['_'+f]=await api('GET',`/api/applications?type=${type}`);renderDashApps(type==='transfer'?'transfers':'apps','dash-'+f+'-table',type);renderStats();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── CERTIFICATES ─── */
+function renderDashCerts(){
+  if(!can('certificates','full'))return
+  const c=window._certs||[]
+  document.getElementById('dash-certs-content').innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+    <div class="form-card"><h3>🎓 إصدار شهادة</h3>
+      <div class="form-row">
+        <div class="field"><label>اسم الضابط</label><input type="text" id="c-name" placeholder="OFFICER NAME"></div>
+        <div class="field"><label>نوع الشهادة</label><select id="c-type" onchange="updateCertPreview()">
+          <option value="PROMOTION">🏅 ترقية</option><option value="TRAINING">🎓 تدريب</option>
+          <option value="EXCELLENCE">🌟 تميّز</option><option value="GRADUATION">🎉 تخرج</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>الرتبة/الدورة</label><input type="text" id="c-rank" placeholder="RANK" oninput="updateCertPreview()"></div>
+        <div class="field"><label>التاريخ</label><input type="date" id="c-date" onchange="updateCertPreview()"></div>
+      </div>
+      <button class="btn" onclick="issueDashCert()">🎓 إصدار</button>
+    </div>
+    <div>
+      <div class="cert-doc" id="cert-preview-box">
+        <div class="cc tl"></div><div class="cc tr"></div><div class="cc bl"></div><div class="cc br"></div>
+        <div class="cert-doc-title">CERTIFICATE OF PROMOTION</div>
+        <div class="cert-doc-dept">LSPD - LOS SANTOS POLICE DEPARTMENT</div>
+        <hr class="cert-hr">
+        <div style="text-align:center;font-size:32px;margin:4px 0">⭐</div>
+        <hr class="cert-hr">
+        <div class="cert-name-area"><div class="cert-name-lbl">THIS CERTIFIES THAT</div><div class="cert-name-val" id="cpv-name">OFFICER NAME</div></div>
+        <div class="cert-promoted-lbl">has been awarded the rank of</div>
+        <div class="cert-rank-val" id="cpv-rank">RANK</div>
+        <div class="cert-desc-text">In recognition of outstanding performance and dedication<br>to the Los Santos Police Department.</div>
+        <div class="cert-footer">
+          <div style="font-size:24px">👑</div>
+          <div class="cert-date-area">Awarded on:<br><span id="cpv-date" style="color:#c0d0e0;font-size:9px">—</span><div class="cert-id-text" id="cpv-id">ID: —</div></div>
+          <div class="cert-sig-area">Authorized by:<div class="cert-sig-name" id="cpv-sig">Chief of Police</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="section-title" style="margin-top:24px">🗂️ الشهادات المحفوظة</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px" id="saved-certs">${c.length?c.map(x=>`<div class="stat-card"><div style="font-size:20px;margin-bottom:4px">${x.cert_type==='PROMOTION'?'🏅':'🎓'}</div><div style="font-weight:700;font-size:13px">${x.officer_name}</div><div style="font-size:11px;color:var(--muted)">${x.rank_name}<br>📅 ${x.issue_date}</div><button class="action-btn delete" onclick="deleteDashCert(${x.id})" style="margin-top:6px">🗑️</button></div>`).join(''):'<div class="empty-state" style="grid-column:1/-1"><p>لا توجد شهادات</p></div>'}</div>`
+  const d=document.getElementById('c-date');if(!d.value)d.value=new Date().toISOString().slice(0,10)
+  updateCertPreview()
+}
+
+function updateCertPreview(){
+  const n=document.getElementById('c-name')?.value||'OFFICER NAME',r=document.getElementById('c-rank')?.value||'RANK'
+  const t=document.getElementById('c-type')?.value||'PROMOTION',d=document.getElementById('c-date')?.value||''
+  document.getElementById('cpv-name').textContent=n.toUpperCase()||'OFFICER NAME'
+  document.getElementById('cpv-rank').textContent=r.toUpperCase()||'RANK'
+  document.getElementById('cpv-date').textContent=d||'—'
+  const titles={'PROMOTION':'CERTIFICATE OF PROMOTION','TRAINING':'CERTIFICATE OF TRAINING','EXCELLENCE':'CERTIFICATE OF EXCELLENCE','GRADUATION':'CERTIFICATE OF GRADUATION'}
+  document.querySelector('#cert-preview-box .cert-doc-title').textContent=titles[t]||'CERTIFICATE'
+}
+
+async function issueDashCert(){
+  const n=document.getElementById('c-name').value.trim(),r=document.getElementById('c-rank').value.trim()
+  if(!n||!r){toast('أدخل الاسم والرتبة','error');return}
+  try{await api('POST','/api/certificates',{officer_name:n,cert_type:document.getElementById('c-type').value,rank_name:r,issue_date:document.getElementById('c-date').value})
+    document.getElementById('c-name').value='';document.getElementById('c-rank').value=''
+    window._certs=await api('GET','/api/certificates');renderDashCerts();toast('✅ تم إصدار الشهادة','success')
+  }catch(e){toast(e.message,'error')}
+}
+
+async function deleteDashCert(id){if(!confirm('حذف؟'))return;try{await api('DELETE',`/api/certificates/${id}`);window._certs=await api('GET','/api/certificates');renderDashCerts();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── PUBLIC REPORTS (Admin) ─── */
+function renderDashPubReports(){
+  const _isHead=currentUser.is_owner||currentUser.role==='FULL ACCESS'
+  if(!_isHead)return
+  const r=window._pubReports||[]
+  document.getElementById('dash-pubreports-list').innerHTML=r.length?r.map(x=>`<div class="report-card"><div class="ann-header"><div class="ann-title">📝 ${x.name} ${x.rank?'('+x.rank+')':''}</div><div class="ann-date">${x.date?.slice(0,10)}</div></div><div class="ann-body">${x.body}</div>${x.link?`<a href="${x.link}" target="_blank" class="ann-tag" style="display:inline-block;margin-top:6px;text-decoration:none">🔗 رابط</a>`:''}${can('applications','full')?`<button class="action-btn delete" onclick="deletePubReport(${x.id})" style="float:left;margin-top:4px">🗑️</button>`:''}</div>`).join(''):'<div class="empty-state"><p>لا توجد تقارير عامة</p></div>'
+}
+async function deletePubReport(id){if(!confirm('حذف؟'))return;try{await api('DELETE',`/api/public-reports/${id}`);window._pubReports=await api('GET','/api/public-reports');renderDashPubReports();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── DIVISION MEMBERS ─── */
+function renderDashDivision(){
+  if(!can('division_members','full'))return
+  const m=window._divisionMembers||[]
+  const canManage=currentUser.is_owner||currentUser.role==='FULL ACCESS'
+  const roleDiv={FTO:'FTO',IA:'IA','WING COMMANDER':'WINGS'}
+  const myDiv=roleDiv[currentUser.role]
+  const divisions=canManage?['FTO','IA','WINGS']:(myDiv?[myDiv]:[])
+  document.getElementById('dash-division-content').innerHTML=divisions.map(d=>{
+    const members=m.filter(x=>x.division===d)
+    return `<div class="form-card" style="max-width:100%"><h3>${d}</h3>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" id="dm-name-${d}" placeholder="اسم العضو" style="flex:2;min-width:120px;background:#071320;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;color:white;font-family:'Cairo',sans-serif;font-size:13px">
+        <button class="btn btn-sm btn-success" onclick="addDivisionMember('${d}')" style="width:auto">➕ إضافة</button>
+      </div>
+      ${members.length?members.map(x=>`<div class="q-item" style="flex-wrap:wrap"><span style="color:var(--accent);font-weight:700">${x.name}</span>
+        <span style="color:var(--gold2);font-size:13px">نقاط: ${x.points}</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-success" onclick="updatePoints(${x.id},1)" style="width:auto;padding:2px 8px;font-size:11px">+1</button>
+          <button class="btn btn-sm btn-danger" onclick="updatePoints(${x.id},-1)" style="width:auto;padding:2px 8px;font-size:11px">-1</button>
+          <button class="btn btn-sm" onclick="editNote(${x.id},'${x.name}','${x.notes.replace(/'/g,"\\'")}')" style="width:auto;padding:2px 8px;font-size:11px">📝 ملاحظة</button>
+          <button class="action-btn delete" onclick="deleteDivisionMember(${x.id},'${x.name}')" style="padding:2px 6px;font-size:11px">✕</button>
+        </div>
+        ${x.notes?`<div style="width:100%;font-size:11px;color:var(--muted);margin-top:2px">📌 ${x.notes}</div>`:''}</div>`).join(''):'<div style="color:var(--muted);font-size:12px">لا يوجد أعضاء</div>'}</div>`
+  }).join('')
+}
+async function addDivisionMember(d){
+  const n=document.getElementById('dm-name-'+d).value.trim()
+  if(!n){toast('أدخل اسم العضو','error');return}
+  try{await api('POST','/api/division-members',{division:d,name:n});window._divisionMembers=await api('GET','/api/division-members');renderDashDivision();toast('✅ تمت الإضافة','success')}catch(e){toast(e.message,'error')}
+}
+async function updatePoints(id,amt){
+  try{await api('PUT',`/api/division-members/${id}/points`,{points:amt});window._divisionMembers=await api('GET','/api/division-members');renderDashDivision();toast(amt>0?'✅ +1 نقطة':'❌ -1 نقطة','info')}catch(e){toast(e.message,'error')}
+}
+async function editNote(id,name,current){
+  const n=prompt('📝 ملاحظة لـ '+name+':',current)
+  if(n===null)return
+  try{await api('PUT',`/api/division-members/${id}/notes`,{notes:n});window._divisionMembers=await api('GET','/api/division-members');renderDashDivision();toast('✅ تم الحفظ','success')}catch(e){toast(e.message,'error')}
+}
+async function deleteDivisionMember(id,name){
+  if(!confirm('حذف '+name+'?'))return
+  try{await api('DELETE',`/api/division-members/${id}`);window._divisionMembers=await api('GET','/api/division-members');renderDashDivision();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}
+}
+
+/* ─── LOGS ─── */
+function renderDashLogs(){
+  if(!can('logs','full'))return
+  const l=window._logs||[]
+  document.getElementById('dash-logs-table').innerHTML=l.length?l.map(x=>`<div class="ann" style="padding:10px 14px;border-right-color:var(--muted)"><div style="display:flex;gap:8px;font-size:12px"><span style="color:var(--accent2);min-width:70px">${x.date?.slice(0,16)||''}</span><span style="color:var(--gold2);font-weight:700">${x.username||'—'}</span><span>${x.action}</span><span style="color:var(--muted)">${x.details||''}</span></div></div>`).join(''):'<div class="empty-state"><p>لا توجد سجلات</p></div>'
+}
+async function clearLogs(){if(!confirm('مسح؟'))return;try{await api('DELETE','/api/logs');window._logs=[];renderDashLogs();toast('🗑️ تم المسح','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── SETTINGS ─── */
+function renderDashSettings(){
+  if(!can('settings','full'))return
+  const isFto=currentUser.role==='FTO CHIEF'
+  const s=window._settings||{}
+  const items=[
+    {key:'applications_open',icon:'📋',label:'التقديمات',desc:'فتح/إغلاق باب التقديم'},
+    {key:'transfers_open',icon:'🔄',label:'النقل',desc:'فتح/إغلاق باب النقل'}
+  ]
+  document.getElementById('dash-settings-list').innerHTML=items.filter(i=>!isFto||i.key==='applications_open').map(i=>{
+    const o=s[i.key]!=='false'
+    return `<div class="setting-item"><div class="setting-info"><h4>${i.icon} ${i.label}</h4><p>${i.desc}</p></div><button class="toggle-btn ${o?'on':'off'}" onclick="toggleSetting('${i.key}')">${o?'✅ مفتوح':'❌ مغلق'}</button></div>`
+  }).join('')
+}
+async function toggleSetting(k){
+  const s=window._settings||{};const v=s[k]==='false'?'true':'false'
+  try{await api('PUT','/api/settings',{key:k,value:v});window._settings=await api('GET','/api/settings');renderDashSettings();toast(`تم ${v==='true'?'فتح':'إغلاق'}`,'success')}catch(e){toast(e.message,'error')}
+}
+
+/* ─── QUESTIONS ─── */
+async function renderQuestions(type,elId){
+  if(!can('settings','full'))return
+  const qs=await api('GET',`/api/questions/${type}`)
+  const label=type==='transfer'?'النقل':'التقديم'
+  document.getElementById(elId).innerHTML=`<div class="form-card" style="max-width:100%"><h3>❓ أسئلة ${label}</h3>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <input type="text" id="q-${type}-new" placeholder="نص السؤال" style="flex:2;min-width:120px;background:#071320;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;color:white;font-family:'Cairo',sans-serif;font-size:13px">
+      <select id="q-${type}-type" style="flex:1;min-width:80px;background:#071320;border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px;color:white;font-family:'Cairo',sans-serif;font-size:12px">
+        <option value="text">نص</option><option value="yesno">نعم/لا</option></select>
+      <button class="btn btn-sm btn-success" onclick="addQuestion('${type}')" style="width:auto">➕ أضف</button>
+    </div>
+    <div id="q-${type}-list">${qs.length?qs.map((q,i)=>`<div class="q-item"><span style="color:var(--muted);min-width:16px;font-size:12px">${i+1}.</span><span class="q-text">${q.text}</span><span class="q-type-badge">${q.type==='yesno'?'نعم/لا':'نص'}</span><button class="action-btn delete" onclick="deleteQuestion('${type}',${q.id})">✕</button></div>`).join(''):'<div style="color:var(--muted);font-size:12px;padding:6px 0">لا توجد أسئلة</div>'}</div></div>`
+}
+async function addQuestion(type){
+  const t=document.getElementById('q-'+type+'-new').value.trim()
+  if(!t){toast('أدخل نص السؤال','error');return}
+  const tp=document.getElementById('q-'+type+'-type').value
+  const qs=await api('GET',`/api/questions/${type}`)
+  qs.push({id:Date.now(),text:t,type:tp})
+  await api('PUT',`/api/questions/${type}`,{questions:qs})
+  document.getElementById('q-'+type+'-new').value=''
+  renderQuestions(type,type==='transfer'?'dash-questions-transfer':'dash-questions-app')
+  toast('✅ تمت إضافة السؤال','success')
+}
+async function deleteQuestion(type,id){
+  let qs=await api('GET',`/api/questions/${type}`)
+  qs=qs.filter(q=>q.id!==id)
+  await api('PUT',`/api/questions/${type}`,{questions:qs})
+  renderQuestions(type,type==='transfer'?'dash-questions-transfer':'dash-questions-app')
+}
+
+/* ─── ACCOUNTS ─── */
+function renderDashAccounts(){
+  if(!can('accounts','full'))return
+  const u=window._users||[]
+  document.getElementById('dash-accounts-content').innerHTML=`<div class="form-card"><h3>➕ إضافة مستخدم</h3>
+    <div class="form-row3"><div class="field"><label>الاسم</label><input type="text" id="au-display"></div>
+    <div class="field"><label>المستخدم</label><input type="text" id="au-user"></div>
+    <div class="field"><label>كلمة المرور</label><input type="text" id="au-pass"></div></div>
+    <div class="field"><label>الرتبة</label><select id="au-role">
+      <option value="VISITOR">VISITOR</option><option value="APPLICANT VIEWER">APPLICANT VIEWER</option>
+      <option value="WINGS">WINGS</option><option value="WING COMMANDER">WING COMMANDER</option>
+      <option value="IA MEMBER">IA MEMBER</option><option value="IA CHIEF">IA CHIEF</option>
+      <option value="FTO MEMBER">FTO MEMBER</option><option value="FTO CHIEF">FTO CHIEF</option>
+      <option value="FULL ACCESS">FULL ACCESS</option></select></div>
+    <button class="btn btn-sm btn-gold" onclick="createUser()" style="width:auto">👤 إنشاء</button></div>
+    <div class="users-grid">${u.map(x=>`<div class="user-card"><div class="user-card-header"><div class="user-avatar">${x.emoji}</div><div><div class="user-card-name">${x.display_name} ${x.is_owner?'<span class="owner-badge">👑</span>':''}</div><div class="user-card-username">@${x.username} • ${x.role}</div></div></div>${x.is_owner?'<span style="color:var(--muted);font-size:11px">👑 لا يمكن تعديل المالك</span>':`<button class="action-btn delete" onclick="deleteUser(${x.id})">🗑️ حذف</button>`}</div>`).join('')}</div>`
+}
+async function createUser(){
+  const d=document.getElementById('au-display').value.trim(),u=document.getElementById('au-user').value.trim(),p=document.getElementById('au-pass').value.trim(),r=document.getElementById('au-role').value
+  if(!u||!p||!d){toast('املأ جميع الحقول','error');return}
+  try{await api('POST','/api/users',{username:u,password:p,display_name:d,emoji:'👤',role:r});window._users=await api('GET','/api/users');renderDashAccounts();toast('✅ تمت الإضافة','success');document.getElementById('au-display').value='';document.getElementById('au-user').value='';document.getElementById('au-pass').value=''}catch(e){toast(e.message,'error')}
+}
+async function deleteUser(id){if(!confirm('حذف؟'))return;try{await api('DELETE',`/api/users/${id}`);window._users=await api('GET','/api/users');renderDashAccounts();toast('🗑️ تم الحذف','info')}catch(e){toast(e.message,'error')}}
+
+/* ─── INIT ─── */
+checkAuth()
+loadAnnouncements()
+</script>
+</body>
+</html>
