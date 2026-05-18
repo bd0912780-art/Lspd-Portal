@@ -9,8 +9,8 @@ const cron = require('node-cron');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const DB_PATH = path.join(__dirname, 'data.db');
-const BACKUP_DIR = path.join(__dirname, 'backups');
+const DB_PATH = path.join(process.env.DB_PATH || __dirname, 'data.db');
+const BACKUP_DIR = path.join(process.env.DB_PATH || __dirname, 'backups');
 const SECRET = process.env.JWT_SECRET || 'admin-secret-key-2026';
 
 app.use(express.json());
