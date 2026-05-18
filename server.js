@@ -361,14 +361,30 @@ app.get('/api/me', auth, (req, res) => {
 });
 
 app.post('/api/users', auth, requireRole('OWNER'), async (req, res) => {
-  const { username, password, display_name, role } = req.body;
-  if (!username || !password || !display_name) return res.status(400).json({ error: 'حقول ناقصة' });
-  const exists = dbGet("SELECT id FROM users WHERE username=?", [username]);
-  if (exists) return res.status(400).json({ error: 'اسم المستخدم موجود' });
-  const hash = await bcrypt.hash(password, 10);
-  dbRun("INSERT INTO users (username, password, display_name, role) VALUES (?,?,?,?)", [username, hash, display_name, role || 'ADMIN']);
-  logAction('إضافة مستخدم', req.user.username, display_name);
-  res.json({ success: true });
+  try {
+    const { username, password, display_name, role, discord_tag, member_code } = req.body;
+    if (!username || !password || !display_name) return res.status(400).json({ error: 'حقول ناقصة' });
+    const exists = dbGet("SELECT id FROM users WHERE username=?", [username]);
+    if (exists) return res.status(400).json({ error: 'اسم المستخدم موجود' });
+    const hash = await bcrypt.hash(password, 10);
+    dbRun("INSERT INTO users (username, password, display_name, role, discord_tag) VALUES (?,?,?,?,?)", [username, hash, display_name, role || 'ADMIN', discord_tag || '']);
+    
+    // Add to members table automatically
+    const code = member_code || Math.random().toString(36).substring(2, 8).toUpperCase();
+    dbRun("INSERT INTO members (name, role, discord_tag, member_code) VALUES (?,?,?,?)", [display_name, role || 'MEMBER', discord_tag || '', code]);
+    
+    logAction('إضافة مستخدم وعضو', req.user.username, display_name);
+    
+    // Send DM
+    if (botClient && discord_tag && getSetting('welcome_enabled') !== 'false') {
+      const msg = getSetting('member_accept_msg') || `🎉 مرحباً ${display_name}!\n\n📌 رتبتك: ${role || 'MEMBER'}\n🆔 كودك: ${code}\n🔑 حسابك: ${username}\n🔑 كلمة المرور: ${password}\n\nأهلاً بك!`;
+      sendDiscordDM(discord_tag, msg);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    console.error('Add user error:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/users', auth, (req, res) => { res.json(dbQuery("SELECT id, username, display_name, role FROM users")); });
@@ -544,9 +560,10 @@ app.post('/api/tickets', auth, (req, res) => {
 
 app.get('/api/tickets', auth, (req, res) => { res.json(dbQuery("SELECT * FROM tickets ORDER BY created_at DESC")); });
 
-app.put('/api/tickets/:id', auth, (req, res) => {
+app.put('/api/tickets/:id', auth, async (req, res) => {
   const { status, admin_reply } = req.body;
   if (status && !['open', 'closed', 'in_progress'].includes(status)) return res.status(400).json({ error: 'حالة غير صالحة' });
+  if (status === 'closed' && !['OWNER', 'ADMIN'].includes(req.user.role)) return res.status(403).json({ error: 'فقط المالك والإداري يقدر يغلق التذاكر' });
   const t = dbGet("SELECT * FROM tickets WHERE id=?", [req.params.id]);
   if (status) dbRun("UPDATE tickets SET status=?, admin_reply=?, closed_at=CASE WHEN ?='closed' THEN datetime('now') ELSE closed_at END WHERE id=?", [status, admin_reply || '', status, req.params.id]);
   else if (admin_reply) dbRun("UPDATE tickets SET admin_reply=? WHERE id=?", [admin_reply, req.params.id]);
