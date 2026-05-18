@@ -29,27 +29,54 @@ let botClient = null;
 let botGuildId = null;
 
 function saveDB() {
-  try { fs.writeFileSync(DB_PATH, Buffer.from(db.export())); } catch {}
+  try { 
+    fs.writeFileSync(DB_PATH, Buffer.from(db.export())); 
+  } catch (e) { console.error('DB Save Failed:', e.message); }
 }
 
 function dbRun(q, p = []) { db.run(q, p); saveDB(); }
 
 function dbGet(q, p = []) {
-  const r = db.exec(q, p);
-  if (!r.length || !r[0].values.length) return null;
-  const o = {};
-  r[0].columns.forEach((c, i) => o[c] = r[0].values[0][i]);
-  return o;
+  try {
+    if (p.length > 0) {
+      const stmt = db.prepare(q);
+      stmt.bind(p);
+      if (stmt.step()) {
+        const res = stmt.getAsObject();
+        stmt.free();
+        return res;
+      }
+      stmt.free();
+      return null;
+    }
+    const r = db.exec(q);
+    if (!r.length || !r[0].values.length) return null;
+    const o = {};
+    r[0].columns.forEach((c, i) => o[c] = r[0].values[0][i]);
+    return o;
+  } catch (e) { console.error('dbGet error:', e.message, q, p); return null; }
 }
 
 function dbQuery(q, p = []) {
-  const r = db.exec(q, p);
-  if (!r.length || !r[0].values.length) return [];
-  return r[0].values.map(v => {
-    const o = {};
-    r[0].columns.forEach((c, i) => o[c] = v[i]);
-    return o;
-  });
+  try {
+    if (p.length > 0) {
+      const stmt = db.prepare(q);
+      stmt.bind(p);
+      const rows = [];
+      while (stmt.step()) {
+        rows.push(stmt.getAsObject());
+      }
+      stmt.free();
+      return rows;
+    }
+    const r = db.exec(q);
+    if (!r.length || !r[0].values.length) return [];
+    return r[0].values.map(v => {
+      const o = {};
+      r[0].columns.forEach((c, i) => o[c] = v[i]);
+      return o;
+    });
+  } catch (e) { console.error('dbQuery error:', e.message, q, p); return []; }
 }
 
 function logAction(action, by, detail) {
@@ -163,7 +190,6 @@ async function initBot() {
     const ticketChannels = {};
 
     const ratingLabels = { 1: 'ضعيف', 2: 'مقبول', 3: 'جيد', 4: 'جيد جداً', 5: 'ممتاز' };
-    const ratingWords = ['ضعيف', 'مقبول', 'جيد', 'ممتاز', 'رائع'];
     const rateRegex = /(?:قيّم|قيم|rate)\s*(?:<@!?(\d+)>)?\s*(ضعيف|مقبول|جيد جداً|ممتاز|رائع|1|2|3|4|5)/i;
     const mentionRegex = /<@!?(\d+)>/;
 
@@ -285,12 +311,14 @@ async function initBot() {
 }
 
 async function seedAdmin() {
-  const exists = dbGet("SELECT id FROM users WHERE username='admin'");
-  if (!exists) {
-    const hash = await bcrypt.hash('admin123', 10);
-    dbRun("INSERT INTO users (username, password, display_name, role) VALUES (?,?,?,?)", ['admin', hash, 'المدير', 'OWNER']);
-    console.log('Default admin created: admin / admin123');
-  }
+  try {
+    const exists = dbGet("SELECT id FROM users WHERE username='admin'");
+    if (!exists) {
+      const hash = await bcrypt.hash('admin123', 10);
+      dbRun("INSERT INTO users (username, password, display_name, role) VALUES (?,?,?,?)", ['admin', hash, 'المدير', 'OWNER']);
+      console.log('Default admin created: admin / admin123');
+    }
+  } catch (e) { console.error('Seed admin failed:', e.message); }
 }
 
 /* ─── AUTH ─── */
@@ -607,10 +635,13 @@ app.get('*', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); }
 /* ─── INIT ─── */
 (async () => {
   const SQL = await initSqlJs();
+  console.log('Database path:', DB_PATH);
   if (fs.existsSync(DB_PATH)) {
     db = new SQL.Database(fs.readFileSync(DB_PATH));
+    console.log('Database loaded from file');
   } else {
     db = new SQL.Database();
+    console.log('New database created');
   }
   db.run(`
     CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT UNIQUE, password TEXT, display_name TEXT, role TEXT DEFAULT 'ADMIN', discord_tag TEXT);
