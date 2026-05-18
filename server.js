@@ -172,9 +172,18 @@ async function sendWeeklyReport() {
 
 async function initBot() {
   const token = getSetting('bot_token');
-  if (!token) return;
+  console.log('Bot token from DB:', token ? 'FOUND (length: ' + token.length + ')' : 'NOT FOUND');
+  if (!token) {
+    console.log('⚠️ Bot not starting: No bot_token in settings. Please set it in the admin panel.');
+    return;
+  }
   botGuildId = getSetting('guild_id');
+  console.log('Guild ID from DB:', botGuildId ? 'FOUND' : 'NOT FOUND');
+  if (!botGuildId) {
+    console.log('⚠️ Warning: No guild_id in settings. Bot will login but guild features may not work.');
+  }
   try {
+    console.log('Attempting to login bot...');
     const { Client, GatewayIntentBits } = require('discord.js');
     botClient = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
@@ -610,7 +619,22 @@ app.put('/api/settings', auth, (req, res) => {
   if (!req.body.key) return res.status(400).json({ error: 'مفتاح مطلوب' });
   dbRun("INSERT OR REPLACE INTO settings (key, value) VALUES (?,?)", [req.body.key, req.body.value]);
   logAction('تغيير إعداد', req.user.username, req.body.key);
+  if (req.body.key === 'bot_token' && req.body.value && !botClient) {
+    console.log('Bot token updated. Restart server to start the bot.');
+  }
   res.json({ success: true });
+});
+app.get('/api/bot-status', auth, (req, res) => {
+  const token = getSetting('bot_token');
+  const guildId = getSetting('guild_id');
+  res.json({
+    online: !!botClient && botClient.isReady(),
+    hasToken: !!token,
+    tokenLength: token ? token.length : 0,
+    hasGuild: !!guildId,
+    botTag: botClient && botClient.isReady() ? botClient.user.tag : null,
+    settingsChecked: { token, guildId }
+  });
 });
 
 /* ─── BACKUP ─── */
