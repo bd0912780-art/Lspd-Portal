@@ -563,7 +563,6 @@ app.get('/api/tickets', auth, (req, res) => { res.json(dbQuery("SELECT * FROM ti
 app.put('/api/tickets/:id', auth, async (req, res) => {
   const { status, admin_reply } = req.body;
   if (status && !['open', 'closed', 'in_progress'].includes(status)) return res.status(400).json({ error: 'حالة غير صالحة' });
-  if (status === 'closed' && !['OWNER', 'ADMIN'].includes(req.user.role)) return res.status(403).json({ error: 'فقط المالك والإداري يقدر يغلق التذاكر' });
   const t = dbGet("SELECT * FROM tickets WHERE id=?", [req.params.id]);
   if (status) dbRun("UPDATE tickets SET status=?, admin_reply=?, closed_at=CASE WHEN ?='closed' THEN datetime('now') ELSE closed_at END WHERE id=?", [status, admin_reply || '', status, req.params.id]);
   else if (admin_reply) dbRun("UPDATE tickets SET admin_reply=? WHERE id=?", [admin_reply, req.params.id]);
