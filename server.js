@@ -171,16 +171,16 @@ async function sendWeeklyReport() {
 }
 
 async function initBot() {
-  const token = getSetting('bot_token');
-  console.log('Bot token from DB:', token ? 'FOUND (length: ' + token.length + ')' : 'NOT FOUND');
+  const token = process.env.BOT_TOKEN || getSetting('bot_token');
+  console.log('Bot token:', token ? 'FOUND (length: ' + token.length + ')' : 'NOT FOUND');
   if (!token) {
-    console.log('⚠️ Bot not starting: No bot_token in settings. Please set it in the admin panel.');
+    console.log('⚠️ Bot not starting: No bot_token. Add BOT_TOKEN to Railway env vars or set in admin panel.');
     return;
   }
-  botGuildId = getSetting('guild_id');
-  console.log('Guild ID from DB:', botGuildId ? 'FOUND' : 'NOT FOUND');
+  botGuildId = process.env.GUILD_ID || getSetting('guild_id');
+  console.log('Guild ID:', botGuildId ? 'FOUND' : 'NOT FOUND');
   if (!botGuildId) {
-    console.log('⚠️ Warning: No guild_id in settings. Bot will login but guild features may not work.');
+    console.log('⚠️ Warning: No guild_id. Add GUILD_ID to Railway env vars.');
   }
   try {
     console.log('Attempting to login bot...');
