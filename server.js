@@ -341,10 +341,13 @@ function requireRole(minRole) {
 
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('[LOGIN] Attempt:', username);
   if (!username || !password) return res.status(400).json({ error: 'أدخل بيانات الدخول' });
   const user = dbGet("SELECT * FROM users WHERE username=?", [username]);
+  console.log('[LOGIN] User found:', !!user, user ? `Hash starts with: ${user.password?.slice(0, 15)}...` : 'null');
   if (!user) return res.status(401).json({ error: 'بيانات خاطئة' });
   const ok = await bcrypt.compare(password, user.password);
+  console.log('[LOGIN] Password match:', ok);
   if (!ok) return res.status(401).json({ error: 'بيانات خاطئة' });
   const token = jwt.sign({ id: user.id, username: user.username, display_name: user.display_name, role: user.role }, SECRET, { expiresIn: '7d' });
   logAction('تسجيل دخول', username, 'من لوحة الإدارة');
