@@ -375,9 +375,9 @@ app.post('/api/users', auth, requireRole('OWNER'), async (req, res) => {
     
     logAction('إضافة مستخدم وعضو', req.user.username, display_name);
     
-    // Send DM
-    if (botClient && discord_tag && getSetting('welcome_enabled') !== 'false') {
-      const msg = getSetting('member_accept_msg') || `🎉 مرحباً ${display_name}!\n\n📌 رتبتك: ${role || 'MEMBER'}\n🆔 كودك: ${code}\n🔑 حسابك: ${username}\n🔑 كلمة المرور: ${password}\n\nأهلاً بك!`;
+    // Send DM with credentials
+    if (botClient && discord_tag) {
+      const msg = `🎉 مرحباً ${display_name} في السيرفر!\n\n📌 رتبتك: ${role || 'MEMBER'}\n🆔 كودك: ${code}\n🔑 حسابك: ${username}\n🔑 كلمة المرور: ${password}`;
       sendDiscordDM(discord_tag, msg);
     }
     res.json({ success: true });
